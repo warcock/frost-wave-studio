@@ -1,21 +1,16 @@
-import { useState } from 'react'
 import { StudioButton } from '@/components/ui/studio-button'
-
-interface DrumPattern {
-  [key: string]: boolean[]
-}
+import { useStudioAudio } from '@/contexts/AudioContext'
 
 const DrumMachine = () => {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
-  const [pattern, setPattern] = useState<DrumPattern>({
-    kick: new Array(16).fill(false),
-    snare: new Array(16).fill(false),
-    hihat: new Array(16).fill(false),
-    openhat: new Array(16).fill(false),
-    crash: new Array(16).fill(false),
-    ride: new Array(16).fill(false)
-  })
+  const { 
+    isPlaying, 
+    currentStep, 
+    drumPattern: pattern, 
+    setDrumPattern: setPattern,
+    playDrumSample,
+    isInitialized,
+    initializeAudio
+  } = useStudioAudio()
 
   const drumSounds = [
     { id: 'kick', name: 'Kick', color: 'bg-destructive' },
@@ -26,13 +21,23 @@ const DrumMachine = () => {
     { id: 'ride', name: 'Ride', color: 'bg-accent' }
   ]
 
-  const toggleStep = (drumId: string, step: number) => {
+  const toggleStep = async (drumId: string, step: number) => {
+    if (!isInitialized) {
+      await initializeAudio()
+    }
+    
     setPattern(prev => ({
       ...prev,
       [drumId]: prev[drumId].map((active, index) => 
         index === step ? !active : active
       )
     }))
+    
+    // Play sample when toggling on
+    const newState = !pattern[drumId][step]
+    if (newState) {
+      playDrumSample(drumId)
+    }
   }
 
   const clearPattern = () => {

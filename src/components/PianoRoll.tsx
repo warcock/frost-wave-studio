@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { StudioButton } from '@/components/ui/studio-button'
+import { useStudioAudio } from '@/contexts/AudioContext'
 
 interface Note {
   id: string
@@ -12,6 +13,7 @@ interface Note {
 const PianoRoll = () => {
   const [notes, setNotes] = useState<Note[]>([])
   const [selectedNote, setSelectedNote] = useState<string | null>(null)
+  const { playPianoNote, isInitialized, initializeAudio } = useStudioAudio()
   
   // Piano keys (88 keys, starting from A0)
   const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -59,9 +61,11 @@ const PianoRoll = () => {
                   ? "bg-piano-key-black text-piano-key-white hover:bg-piano-key-active" 
                   : "bg-piano-key-white text-piano-key-black hover:bg-highlight"
               )}
-              onClick={() => {
-                // Play note sound here
-                console.log(`Playing ${key.name}`)
+              onClick={async () => {
+                if (!isInitialized) {
+                  await initializeAudio()
+                }
+                playPianoNote(key.note, 0.5)
               }}
             >
               {key.name}

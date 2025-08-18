@@ -1,48 +1,51 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Play, Pause, Square, SkipBack, RotateCcw } from 'lucide-react'
 import { StudioButton } from '@/components/ui/studio-button'
 import { Slider } from '@/components/ui/slider'
+import { useStudioAudio } from '@/contexts/AudioContext'
 
 const TransportControls = () => {
-  const [isPlaying, setIsPlaying] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
-  const [bpm, setBpm] = useState(120)
-  const [position, setPosition] = useState(0) // Position in beats
-  const [volume, setVolume] = useState(80)
+  const { 
+    isPlaying, 
+    setIsPlaying, 
+    currentStep, 
+    setCurrentStep, 
+    bpm, 
+    setBpm, 
+    volume, 
+    setVolume,
+    isInitialized,
+    initializeAudio
+  } = useStudioAudio()
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setPosition(prev => prev + 0.25) // Increment by 16th notes
-      }, (60 / bpm / 4) * 1000) // Convert BPM to milliseconds for 16th notes
+  const handlePlay = async () => {
+    if (!isInitialized) {
+      await initializeAudio()
     }
-    return () => clearInterval(interval)
-  }, [isPlaying, bpm])
-
-  const handlePlay = () => {
     setIsPlaying(!isPlaying)
   }
 
   const handleStop = () => {
     setIsPlaying(false)
-    setPosition(0)
+    setCurrentStep(0)
   }
 
-  const handleRecord = () => {
+  const handleRecord = async () => {
     setIsRecording(!isRecording)
     if (!isPlaying) {
+      if (!isInitialized) {
+        await initializeAudio()
+      }
       setIsPlaying(true)
     }
   }
 
-  const formatTime = (beats: number) => {
-    const totalSeconds = (beats * 60) / bpm
-    const minutes = Math.floor(totalSeconds / 60)
-    const seconds = Math.floor(totalSeconds % 60)
-    const bars = Math.floor(beats / 4) + 1
-    const beat = (beats % 4) + 1
-    return `${bars}:${Math.floor(beat)}:${String(Math.floor((beat % 1) * 4) + 1).padStart(2, '0')}`
+  const formatTime = (step: number) => {
+    const bars = Math.floor(step / 16) + 1
+    const beat = Math.floor((step % 16) / 4) + 1
+    const sixteenth = (step % 4) + 1
+    return `${bars}:${beat}:${String(sixteenth).padStart(2, '0')}`
   }
 
   return (
@@ -53,7 +56,7 @@ const TransportControls = () => {
           <StudioButton
             variant="transport"
             size="transport"
-            onClick={() => setPosition(0)}
+            onClick={() => setCurrentStep(0)}
           >
             <SkipBack className="w-5 h-5" />
           </StudioButton>
@@ -87,7 +90,7 @@ const TransportControls = () => {
           <StudioButton
             variant="transport"
             size="transport"
-            onClick={() => setPosition(0)}
+            onClick={() => setCurrentStep(0)}
           >
             <RotateCcw className="w-5 h-5" />
           </StudioButton>
@@ -95,7 +98,7 @@ const TransportControls = () => {
 
         {/* Position Display */}
         <div className="bg-track-bg border border-grid-line rounded-md px-4 py-2 font-mono text-lg text-primary">
-          {formatTime(position)}
+          {formatTime(currentStep)}
         </div>
 
         {/* BPM Control */}
@@ -143,7 +146,7 @@ const TransportControls = () => {
       <div className="mt-4 bg-track-bg border border-grid-line rounded-md h-2 overflow-hidden">
         <div 
           className="h-full bg-gradient-primary transition-all duration-100"
-          style={{ width: `${(position % 16) * 6.25}%` }}
+          style={{ width: `${(currentStep / 16) * 100}%` }}
         />
       </div>
     </div>

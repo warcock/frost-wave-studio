@@ -6,6 +6,7 @@ import DrumMachine from '@/components/DrumMachine'
 import TransportControls from '@/components/TransportControls'
 import AuthModal from '@/components/AuthModal'
 import { useToast } from '@/hooks/use-toast'
+import { AudioProvider } from '@/contexts/AudioContext'
 
 interface User {
   username: string
@@ -79,45 +80,47 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-accent-panel border-b border-grid-line p-4 shadow-panel">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <Music className="w-6 h-6 text-primary-foreground" />
+    <AudioProvider>
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="bg-accent-panel border-b border-grid-line p-4 shadow-panel">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                <Music className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground">MB Studio</h1>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">MB Studio</h1>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <User className="w-4 h-4" />
-              <span>{user.username}</span>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <User className="w-4 h-4" />
+                <span>{user.username}</span>
+              </div>
+              <StudioButton 
+                variant="ghost" 
+                size="sm"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-4 h-4" />
+              </StudioButton>
             </div>
-            <StudioButton 
-              variant="ghost" 
-              size="sm"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-4 h-4" />
-            </StudioButton>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <main className="p-6 space-y-6">
-        {/* Transport Controls */}
-        <TransportControls />
+        {/* Main Content */}
+        <main className="p-6 space-y-6">
+          {/* Transport Controls */}
+          <TransportControls />
 
-        {/* Production Tools */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <PianoRoll />
-          <DrumMachine />
-        </div>
-      </main>
-    </div>
+          {/* Production Tools */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <PianoRoll />
+            <DrumMachine />
+          </div>
+        </main>
+      </div>
+    </AudioProvider>
   )
 };
 
