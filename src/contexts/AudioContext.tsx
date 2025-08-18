@@ -16,6 +16,8 @@ interface AudioContextType {
   setVolume: (volume: number) => void
   drumPattern: { [key: string]: boolean[] }
   setDrumPattern: (pattern: { [key: string]: boolean[] } | ((prev: { [key: string]: boolean[] }) => { [key: string]: boolean[] })) => void
+  pianoNotes: { id: string; note: number; start: number; duration: number; velocity: number }[]
+  setPianoNotes: (notes: { id: string; note: number; start: number; duration: number; velocity: number }[] | ((prev: { id: string; note: number; start: number; duration: number; velocity: number }[]) => { id: string; note: number; start: number; duration: number; velocity: number }[])) => void
 }
 
 const AudioContext = createContext<AudioContextType | null>(null)
@@ -46,6 +48,7 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
     crash: new Array(16).fill(false),
     ride: new Array(16).fill(false)
   })
+  const [pianoNotes, setPianoNotes] = useState<{ id: string; note: number; start: number; duration: number; velocity: number }[]>([])
 
   // Sequencer logic
   useEffect(() => {
@@ -65,6 +68,13 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
             }
           })
           
+          // Play piano notes for this step
+          pianoNotes.forEach(note => {
+            if (note.start === nextStep) {
+              audio.playPianoNote(note.note, note.duration * 0.25) // Convert to seconds
+            }
+          })
+          
           return nextStep
         })
       }, stepDuration)
@@ -73,7 +83,7 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [isPlaying, bpm, drumPattern, audio])
+  }, [isPlaying, bpm, drumPattern, pianoNotes, audio])
 
   // Update master volume when volume changes
   useEffect(() => {
@@ -108,7 +118,9 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
     setBpm,
     setVolume: handleSetVolume,
     drumPattern,
-    setDrumPattern
+    setDrumPattern,
+    pianoNotes,
+    setPianoNotes
   }
 
   return (

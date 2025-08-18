@@ -11,9 +11,14 @@ interface Note {
 }
 
 const PianoRoll = () => {
-  const [notes, setNotes] = useState<Note[]>([])
   const [selectedNote, setSelectedNote] = useState<string | null>(null)
-  const { playPianoNote, isInitialized, initializeAudio } = useStudioAudio()
+  const { 
+    playPianoNote, 
+    isInitialized, 
+    initializeAudio,
+    pianoNotes: notes,
+    setPianoNotes: setNotes
+  } = useStudioAudio()
   
   // Piano keys (88 keys, starting from A0)
   const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -28,7 +33,20 @@ const PianoRoll = () => {
 
   const gridCells = 32 // 32 beats visible
   
-  const addNote = (noteNumber: number, beat: number) => {
+  const addNote = async (noteNumber: number, beat: number) => {
+    // Check if there's already a note at this position
+    const existingNote = notes.find(note => note.note === noteNumber && note.start === beat)
+    if (existingNote) {
+      // Play the existing note and select it
+      if (!isInitialized) {
+        await initializeAudio()
+      }
+      playPianoNote(noteNumber, 0.5)
+      setSelectedNote(existingNote.id)
+      return
+    }
+
+    // Create new note
     const newNote: Note = {
       id: `${noteNumber}-${beat}-${Date.now()}`,
       note: noteNumber,
@@ -37,30 +55,54 @@ const PianoRoll = () => {
       velocity: 80
     }
     setNotes(prev => [...prev, newNote])
+    
+    // Play the note when placed
+    if (!isInitialized) {
+      await initializeAudio()
+    }
+    playPianoNote(noteNumber, 0.5)
   }
 
   const removeNote = (noteId: string) => {
     setNotes(prev => prev.filter(note => note.id !== noteId))
   }
 
+  const clearAllNotes = () => {
+    setNotes([])
+    setSelectedNote(null)
+  }
+
   return (
     <div className="bg-panel border border-grid-line rounded-lg overflow-hidden shadow-panel">
-      <div className="border-b border-grid-line p-3 bg-accent-panel">
+      <div className="border-b border-grid-line p-3 bg-accent-panel flex items-center justify-between">
         <h3 className="text-lg font-semibold text-foreground">Piano Roll</h3>
+        <div className="flex gap-2">
+          <StudioButton 
+            variant="ghost" 
+            size="sm"
+            onClick={clearAllNotes}
+          >
+            Clear
+          </StudioButton>
+        </div>
       </div>
       
       <div className="flex h-80 overflow-auto">
         {/* Piano Keys */}
-        <div className="w-16 bg-track-bg border-r border-grid-line flex-shrink-0">
+        <div className="w-20 bg-track-bg border-r border-grid-line flex-shrink-0">
           {pianoKeys.map(key => (
             <div
               key={key.note}
               className={cn(
-                "h-4 border-b border-grid-line flex items-center justify-center text-xs cursor-pointer transition-colors",
+                "h-4 border-b border-grid-line/50 flex items-center justify-center text-xs cursor-pointer transition-all duration-150 relative",
                 key.isBlack 
-                  ? "bg-piano-key-black text-piano-key-white hover:bg-piano-key-active" 
-                  : "bg-piano-key-white text-piano-key-black hover:bg-highlight"
+                  ? "bg-piano-key-black text-piano-key-white hover:bg-piano-key-active hover:text-foreground z-10 mx-2 -my-px" 
+                  : "bg-piano-key-white text-piano-key-black hover:bg-highlight hover:text-foreground"
               )}
+              style={{
+                fontSize: '10px',
+                fontWeight: '500'
+              }}
               onClick={async () => {
                 if (!isInitialized) {
                   await initializeAudio()
@@ -103,11 +145,16 @@ const PianoRoll = () => {
           <div className="grid grid-cols-32 h-full">
             {pianoKeys.map((key, rowIndex) => (
               Array.from({ length: gridCells }).map((_, colIndex) => (
-                <div
-                  key={`${key.note}-${colIndex}`}
-                  className="h-4 border-r border-grid-line/20 hover:bg-primary/20 cursor-pointer transition-colors"
-                  onClick={() => addNote(key.note, colIndex)}
-                />
+              <div
+                key={`${key.note}-${colIndex}`}
+                className="h-4 border-r border-grid-line/20 hover:bg-primary/20 cursor-pointer transition-colors relative"
+                onClick={async () => {
+                  if (!isInitialized) {
+                    await initializeAudio()
+                  }
+                  await addNote(key.note, colIndex)
+                }}
+              />
               ))
             ))}
           </div>
@@ -129,9 +176,14 @@ const PianoRoll = () => {
                   left: `${(note.start / gridCells) * 100}%`,
                   width: `${(note.duration / gridCells) * 100}%`,
                 }}
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation()
                   setSelectedNote(note.id)
+                  // Play note when clicked
+                  if (!isInitialized) {
+                    await initializeAudio()
+                  }
+                  playPianoNote(note.note, 0.5)
                 }}
                 onDoubleClick={() => removeNote(note.id)}
               />
