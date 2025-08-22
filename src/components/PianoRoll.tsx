@@ -20,9 +20,9 @@ const PianoRoll = () => {
     setPianoNotes: setNotes
   } = useStudioAudio()
   
-  // Piano keys (88 keys, starting from A0)
+  // Piano keys (88 keys, full range)
   const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-  const octaves = [2, 3, 4, 5, 6, 7] // Focus on middle octaves for the demo
+  const octaves = [1, 2, 3, 4, 5, 6, 7, 8] // Full piano range from C1 to C8
   const pianoKeys = octaves.flatMap(octave => 
     noteNames.map((name, index) => ({
       note: octave * 12 + index,
@@ -87,21 +87,22 @@ const PianoRoll = () => {
         </div>
       </div>
       
-      <div className="flex h-80 overflow-auto">
+      <div className="flex h-96 overflow-auto">
         {/* Piano Keys */}
-        <div className="w-20 bg-track-bg border-r border-grid-line flex-shrink-0">
+        <div className="w-24 bg-track-bg border-r border-grid-line flex-shrink-0">
           {pianoKeys.map(key => (
             <div
               key={key.note}
               className={cn(
-                "h-4 border-b border-grid-line/50 flex items-center justify-center text-xs cursor-pointer transition-all duration-150 relative",
+                "h-3 border-b border-grid-line/30 flex items-center justify-center text-xs cursor-pointer transition-all duration-200 relative group",
                 key.isBlack 
-                  ? "bg-piano-key-black text-piano-key-white hover:bg-piano-key-active hover:text-foreground z-10 mx-2 -my-px" 
-                  : "bg-piano-key-white text-piano-key-black hover:bg-highlight hover:text-foreground"
+                  ? "bg-piano-key-black text-piano-key-white hover:bg-piano-key-active hover:text-foreground z-10 mx-3 -my-px shadow-sm hover:shadow-md" 
+                  : "bg-piano-key-white text-piano-key-black hover:bg-piano-key-white/80 hover:text-foreground hover:shadow-sm"
               )}
               style={{
-                fontSize: '10px',
-                fontWeight: '500'
+                fontSize: '9px',
+                fontWeight: '600',
+                minHeight: '12px'
               }}
               onClick={async () => {
                 if (!isInitialized) {
@@ -110,7 +111,9 @@ const PianoRoll = () => {
                 playPianoNote(key.note, 0.5)
               }}
             >
-              {key.name}
+              <span className="group-hover:scale-110 transition-transform duration-150">
+                {key.name}
+              </span>
             </div>
           ))}
         </div>
@@ -147,14 +150,17 @@ const PianoRoll = () => {
               Array.from({ length: gridCells }).map((_, colIndex) => (
               <div
                 key={`${key.note}-${colIndex}`}
-                className="h-4 border-r border-grid-line/20 hover:bg-primary/20 cursor-pointer transition-colors relative"
+                className="h-3 border-r border-grid-line/20 hover:bg-primary/30 cursor-pointer transition-all duration-150 relative group"
+                style={{ minHeight: '12px' }}
                 onClick={async () => {
                   if (!isInitialized) {
                     await initializeAudio()
                   }
                   await addNote(key.note, colIndex)
                 }}
-              />
+              >
+                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-sm" />
+              </div>
               ))
             ))}
           </div>
@@ -168,13 +174,14 @@ const PianoRoll = () => {
               <div
                 key={note.id}
                 className={cn(
-                  "absolute h-4 bg-secondary rounded border border-secondary-foreground/20 cursor-pointer transition-all",
-                  selectedNote === note.id && "ring-2 ring-primary"
+                  "absolute h-3 bg-secondary rounded border border-secondary-foreground/20 cursor-pointer transition-all duration-200 hover:bg-secondary/80 hover:shadow-sm",
+                  selectedNote === note.id && "ring-2 ring-primary shadow-lg scale-105"
                 )}
                 style={{
                   top: `${(rowIndex / pianoKeys.length) * 100}%`,
                   left: `${(note.start / gridCells) * 100}%`,
                   width: `${(note.duration / gridCells) * 100}%`,
+                  minHeight: '12px'
                 }}
                 onClick={async (e) => {
                   e.stopPropagation()
