@@ -4,6 +4,7 @@ import { StudioButton } from '@/components/ui/studio-button'
 import PianoRoll from '@/components/PianoRoll'
 import DrumMachine from '@/components/DrumMachine'
 import TransportControls from '@/components/TransportControls'
+import ProjectManager from '@/components/ProjectManager'
 import AuthModal from '@/components/AuthModal'
 import { useToast } from '@/hooks/use-toast'
 import { AudioProvider } from '@/contexts/AudioContext'
@@ -90,6 +91,7 @@ const Index = () => {
               </div>
               
               <div className="flex items-center gap-4">
+                <ProjectManager userId={user.id} />
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <User className="w-4 h-4" />
                   <span>{user.username}</span>

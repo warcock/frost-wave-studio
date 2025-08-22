@@ -26,18 +26,15 @@ const DrumMachine = () => {
       await initializeAudio()
     }
     
+    // Always play sample when clicked
+    playDrumSample(drumId)
+    
     setPattern(prev => ({
       ...prev,
       [drumId]: prev[drumId].map((active, index) => 
         index === step ? !active : active
       )
     }))
-    
-    // Play sample when toggling on
-    const newState = !pattern[drumId][step]
-    if (newState) {
-      playDrumSample(drumId)
-    }
   }
 
   const clearPattern = () => {

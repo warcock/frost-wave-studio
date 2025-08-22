@@ -40,41 +40,46 @@ class AudioManager {
   }
 
   private generateKick(sampleRate: number): Float32Array {
-    const length = Math.floor(sampleRate * 0.3) // 300ms
+    const length = Math.floor(sampleRate * 0.4) // 400ms
     const data = new Float32Array(length)
     
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate
-      const freq = 60 * Math.exp(-t * 10) // Frequency sweep from 60Hz
-      const envelope = Math.exp(-t * 8) // Amplitude envelope
-      data[i] = Math.sin(2 * Math.PI * freq * t) * envelope * 0.8
+      const freq = 65 * Math.exp(-t * 12) // Deeper, punchier frequency sweep
+      const envelope = Math.exp(-t * 6) // Longer sustain
+      const click = Math.exp(-t * 40) * 0.2 // Add click for punch
+      data[i] = (Math.sin(2 * Math.PI * freq * t) + click * (Math.random() * 2 - 1)) * envelope * 0.9
     }
     return data
   }
 
   private generateSnare(sampleRate: number): Float32Array {
-    const length = Math.floor(sampleRate * 0.15) // 150ms
+    const length = Math.floor(sampleRate * 0.18) // 180ms
     const data = new Float32Array(length)
     
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate
-      const envelope = Math.exp(-t * 15)
-      const tone = Math.sin(2 * Math.PI * 200 * t) * 0.3
-      const noise = (Math.random() * 2 - 1) * 0.7
-      data[i] = (tone + noise) * envelope * 0.6
+      const envelope = Math.exp(-t * 12)
+      const tone1 = Math.sin(2 * Math.PI * 200 * t) * 0.25
+      const tone2 = Math.sin(2 * Math.PI * 400 * t) * 0.15
+      const noise = (Math.random() * 2 - 1) * 0.8
+      const snap = Math.exp(-t * 30) * (Math.random() * 2 - 1) * 0.3
+      data[i] = (tone1 + tone2 + noise + snap) * envelope * 0.7
     }
     return data
   }
 
   private generateHiHat(sampleRate: number): Float32Array {
-    const length = Math.floor(sampleRate * 0.1) // 100ms
+    const length = Math.floor(sampleRate * 0.08) // 80ms
     const data = new Float32Array(length)
     
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate
-      const envelope = Math.exp(-t * 20)
-      const noise = (Math.random() * 2 - 1)
-      data[i] = noise * envelope * 0.4
+      const envelope = Math.exp(-t * 25)
+      const highFreq = Math.sin(2 * Math.PI * 8000 * t) * 0.3
+      const midFreq = Math.sin(2 * Math.PI * 12000 * t) * 0.2
+      const noise = (Math.random() * 2 - 1) * 0.6
+      data[i] = (highFreq + midFreq + noise) * envelope * 0.5
     }
     return data
   }
@@ -93,15 +98,21 @@ class AudioManager {
   }
 
   private generateCrash(sampleRate: number): Float32Array {
-    const length = Math.floor(sampleRate * 1.0) // 1 second
+    const length = Math.floor(sampleRate * 1.5) // 1.5 seconds
     const data = new Float32Array(length)
     
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate
-      const envelope = Math.exp(-t * 2)
+      const envelope = Math.exp(-t * 1.8) // Slower decay
       const noise = (Math.random() * 2 - 1)
-      const shimmer = Math.sin(2 * Math.PI * 8000 * t) * 0.2
-      data[i] = (noise + shimmer) * envelope * 0.5
+      
+      // Multiple frequency components for richer crash sound
+      const shimmer1 = Math.sin(2 * Math.PI * 4000 * t) * 0.15
+      const shimmer2 = Math.sin(2 * Math.PI * 6000 * t) * 0.1
+      const shimmer3 = Math.sin(2 * Math.PI * 8000 * t) * 0.08
+      const lowFreq = Math.sin(2 * Math.PI * 800 * t) * 0.1
+      
+      data[i] = (noise * 0.6 + shimmer1 + shimmer2 + shimmer3 + lowFreq) * envelope * 0.4
     }
     return data
   }
