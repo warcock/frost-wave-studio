@@ -40,31 +40,39 @@ class AudioManager {
   }
 
   private generateKick(sampleRate: number): Float32Array {
-    const length = Math.floor(sampleRate * 0.4) // 400ms
+    const length = Math.floor(sampleRate * 0.5) // 500ms
     const data = new Float32Array(length)
     
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate
-      const freq = 65 * Math.exp(-t * 12) // Deeper, punchier frequency sweep
-      const envelope = Math.exp(-t * 6) // Longer sustain
-      const click = Math.exp(-t * 40) * 0.2 // Add click for punch
-      data[i] = (Math.sin(2 * Math.PI * freq * t) + click * (Math.random() * 2 - 1)) * envelope * 0.9
+      // Multi-layered kick with sub-bass
+      const subBass = Math.sin(2 * Math.PI * 45 * t) * Math.exp(-t * 3)
+      const fundamental = Math.sin(2 * Math.PI * 70 * Math.exp(-t * 8) * t) * Math.exp(-t * 4)
+      const punch = Math.sin(2 * Math.PI * 150 * Math.exp(-t * 20) * t) * Math.exp(-t * 15)
+      const click = Math.exp(-t * 50) * (Math.random() * 2 - 1) * 0.15
+      const envelope = Math.exp(-t * 3.5)
+      
+      data[i] = (subBass * 0.7 + fundamental * 0.8 + punch * 0.4 + click) * envelope * 0.95
     }
     return data
   }
 
   private generateSnare(sampleRate: number): Float32Array {
-    const length = Math.floor(sampleRate * 0.18) // 180ms
+    const length = Math.floor(sampleRate * 0.22) // 220ms
     const data = new Float32Array(length)
     
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate
-      const envelope = Math.exp(-t * 12)
-      const tone1 = Math.sin(2 * Math.PI * 200 * t) * 0.25
-      const tone2 = Math.sin(2 * Math.PI * 400 * t) * 0.15
-      const noise = (Math.random() * 2 - 1) * 0.8
-      const snap = Math.exp(-t * 30) * (Math.random() * 2 - 1) * 0.3
-      data[i] = (tone1 + tone2 + noise + snap) * envelope * 0.7
+      const envelope = Math.exp(-t * 8)
+      // Complex snare with multiple frequencies
+      const fundamental = Math.sin(2 * Math.PI * 220 * t) * 0.3
+      const overtone1 = Math.sin(2 * Math.PI * 340 * t) * 0.2
+      const overtone2 = Math.sin(2 * Math.PI * 480 * t) * 0.15
+      const rattle = Math.sin(2 * Math.PI * 8000 * t) * 0.1 * Math.exp(-t * 20)
+      const noise = (Math.random() * 2 - 1) * 0.7
+      const crack = Math.exp(-t * 25) * (Math.random() * 2 - 1) * 0.4
+      
+      data[i] = (fundamental + overtone1 + overtone2 + rattle + noise + crack) * envelope * 0.8
     }
     return data
   }
@@ -98,21 +106,24 @@ class AudioManager {
   }
 
   private generateCrash(sampleRate: number): Float32Array {
-    const length = Math.floor(sampleRate * 1.5) // 1.5 seconds
+    const length = Math.floor(sampleRate * 2.2) // 2.2 seconds
     const data = new Float32Array(length)
     
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate
-      const envelope = Math.exp(-t * 1.8) // Slower decay
-      const noise = (Math.random() * 2 - 1)
+      const envelope = Math.exp(-t * 1.2) // Even slower decay
+      const noise = (Math.random() * 2 - 1) * 0.5
       
-      // Multiple frequency components for richer crash sound
-      const shimmer1 = Math.sin(2 * Math.PI * 4000 * t) * 0.15
-      const shimmer2 = Math.sin(2 * Math.PI * 6000 * t) * 0.1
-      const shimmer3 = Math.sin(2 * Math.PI * 8000 * t) * 0.08
-      const lowFreq = Math.sin(2 * Math.PI * 800 * t) * 0.1
+      // Rich harmonic content for realistic crash
+      const shimmer1 = Math.sin(2 * Math.PI * 3200 * t) * 0.2
+      const shimmer2 = Math.sin(2 * Math.PI * 4800 * t) * 0.15
+      const shimmer3 = Math.sin(2 * Math.PI * 6400 * t) * 0.12
+      const shimmer4 = Math.sin(2 * Math.PI * 8800 * t) * 0.08
+      const midFreq = Math.sin(2 * Math.PI * 1600 * t) * 0.15
+      const lowFreq = Math.sin(2 * Math.PI * 650 * t) * 0.12
+      const sizzle = Math.sin(2 * Math.PI * 12000 * t) * 0.06 * Math.exp(-t * 4)
       
-      data[i] = (noise * 0.6 + shimmer1 + shimmer2 + shimmer3 + lowFreq) * envelope * 0.4
+      data[i] = (noise + shimmer1 + shimmer2 + shimmer3 + shimmer4 + midFreq + lowFreq + sizzle) * envelope * 0.45
     }
     return data
   }

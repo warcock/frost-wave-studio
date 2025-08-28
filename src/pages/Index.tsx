@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Music, User, LogOut } from 'lucide-react'
 import { StudioButton } from '@/components/ui/studio-button'
-import PianoRoll from '@/components/PianoRoll'
-import DrumMachine from '@/components/DrumMachine'
-import TransportControls from '@/components/TransportControls'
-import ProjectManager from '@/components/ProjectManager'
 import AuthModal from '@/components/AuthModal'
 import { useToast } from '@/hooks/use-toast'
+import DrumMachine from '@/components/DrumMachine'
+import PianoRoll from '@/components/PianoRoll'
+import TransportControls from '@/components/TransportControls'
+import ProjectManager from '@/components/ProjectManager'
+import MP3Track from '@/components/MP3Track'
 import { AudioProvider } from '@/contexts/AudioContext'
 
 interface User {
@@ -117,6 +118,9 @@ const Index = () => {
               <PianoRoll />
               <DrumMachine />
             </div>
+            
+            {/* Audio Track */}
+            <MP3Track />
           </main>
         </div>
       )}

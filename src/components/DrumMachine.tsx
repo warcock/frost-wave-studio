@@ -99,19 +99,31 @@ const DrumMachine = () => {
 
         {/* Drum rows */}
         {drumSounds.map(drum => (
-          <div key={drum.id} className="flex mb-2 items-center">
+          <div key={drum.id} className="flex mb-2 items-center relative">
             <div className="w-20 text-sm font-medium text-foreground pr-2">
               {drum.name}
             </div>
+            {/* Playback line for this row */}
+            {isPlaying && (
+              <div 
+                className="absolute left-20 top-0 w-0.5 h-8 bg-primary z-10 transition-all duration-75 shadow-lg"
+                style={{ 
+                  left: `${80 + (currentStep * 22)}px`,
+                  boxShadow: '0 0 6px hsl(var(--primary))'
+                }}
+              />
+            )}
             {pattern[drum.id].map((active, index) => (
               <StudioButton
                 key={index}
                 variant={active ? "active" : "ghost"}
                 size="icon"
                 className={cn(
-                  "flex-1 h-8 m-px transition-all",
+                  "flex-1 h-8 m-px transition-all relative",
                   active && drum.color,
-                  currentStep === index && isPlaying && "animate-beat-pulse"
+                  currentStep === index && isPlaying && "ring-2 ring-primary/50",
+                  index % 4 === 0 && "border-l-2 border-primary/20",
+                  index % 8 === 0 && "border-l-2 border-primary/40"
                 )}
                 onClick={() => toggleStep(drum.id, index)}
               />
