@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react'
 import { useAudioContext } from '../hooks/useAudioContext'
 
 interface AudioContextType {
@@ -50,31 +50,45 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
   })
   const [pianoNotes, setPianoNotes] = useState<{ id: string; note: number; start: number; duration: number; velocity: number }[]>([])
 
-  // Sequencer logic
+  // Keep latest patterns/notes in refs to prevent interval reset on every change
+  const drumPatternRef = useRef(drumPattern)
+  const pianoNotesRef = useRef(pianoNotes)
+
   useEffect(() => {
-    let interval: NodeJS.Timeout
+    drumPatternRef.current = drumPattern
+  }, [drumPattern])
+
+  useEffect(() => {
+    pianoNotesRef.current = pianoNotes
+  }, [pianoNotes])
+
+  // Sequencer logic (interval only depends on play state, bpm, and initialization)
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined
 
     if (isPlaying && audio.isInitialized) {
       const stepDuration = (60 / bpm / 4) * 1000 // 16th notes in milliseconds
-      
+
       interval = setInterval(() => {
         setCurrentStep((prevStep) => {
           const nextStep = (prevStep + 1) % 16
-          
+
           // Play drum samples for active steps
-          Object.entries(drumPattern).forEach(([drumType, pattern]) => {
+          const dp = drumPatternRef.current
+          Object.entries(dp).forEach(([drumType, pattern]) => {
             if (pattern[nextStep]) {
               audio.playDrumSample(drumType)
             }
           })
-          
+
           // Play piano notes for this step
-          pianoNotes.forEach(note => {
+          const pn = pianoNotesRef.current
+          pn.forEach(note => {
             if (note.start === nextStep) {
               audio.playPianoNote(note.note, note.duration * 0.25) // Convert to seconds
             }
           })
-          
+
           return nextStep
         })
       }, stepDuration)
@@ -83,7 +97,7 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [isPlaying, bpm, drumPattern, pianoNotes, audio])
+  }, [isPlaying, bpm, audio])
 
   // Update master volume when volume changes
   useEffect(() => {

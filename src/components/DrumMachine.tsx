@@ -96,19 +96,8 @@ const DrumMachine = () => {
             </div>
           ))}
         </div>
-        {/* Drum rows container with a single global playhead line */}
+        {/* Drum rows container */}
         <div className="relative">
-          {isPlaying && (
-            <div
-              className="absolute left-20 top-0 w-0.5 bg-primary z-10 transition-all duration-75 shadow-lg"
-              style={{
-                left: `${80 + (currentStep * 22)}px`,
-                height: `${drumSounds.length * 34}px`, // approx. 32px row height + gaps
-                boxShadow: '0 0 6px hsl(var(--primary))'
-              }}
-            />
-          )}
-
           {/* Drum rows */}
           {drumSounds.map(drum => (
             <div key={drum.id} className="flex mb-2 items-center">

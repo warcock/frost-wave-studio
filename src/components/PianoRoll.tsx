@@ -22,9 +22,9 @@ const PianoRoll = () => {
     currentStep
   } = useStudioAudio()
   
-  // Piano keys (88 keys, full range)
+  // Piano keys (limited functional range C3–C5)
   const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-  const octaves = [0, 1, 2, 3, 4, 5, 6, 7, 8] // Full piano range from C0 to C8
+  const octaves = [3, 4, 5] // Limit to C3 to B5 for performance and functionality
   const pianoKeys = octaves.flatMap(octave => 
     noteNames.map((name, index) => ({
       note: octave * 12 + index,
@@ -34,7 +34,7 @@ const PianoRoll = () => {
     }))
   ).reverse() // Reverse so higher notes are at the top
 
-  const gridCells = 32 // 32 beats visible
+  const gridCells = 16 // Match sequencer's 16 steps
   
   const addNote = async (noteNumber: number, beat: number) => {
     if (!isInitialized) {
