@@ -90,14 +90,12 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
     audio.setMasterVolume(volume)
   }, [volume, audio])
 
-  // Handle play/pause audio context
+  // Keep audio context running once initialized so clicks can audition sounds even when not playing
   useEffect(() => {
-    if (isPlaying) {
+    if (audio.isInitialized) {
       audio.resume()
-    } else {
-      audio.suspend()
     }
-  }, [isPlaying, audio])
+  }, [audio.isInitialized, audio])
 
   const handleSetVolume = (newVolume: number) => {
     setVolume(newVolume)

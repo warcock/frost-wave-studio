@@ -50,7 +50,11 @@ const PianoRoll = () => {
     )
     
     if (existingNote) {
-      setSelectedNote(existingNote.id)
+      // Toggle off: remove the existing note
+      setNotes(prev => prev.filter(n => n.id !== existingNote.id))
+      if (selectedNote === existingNote.id) {
+        setSelectedNote(null)
+      }
     } else {
       // Add new note
       const newNote: Note = {
